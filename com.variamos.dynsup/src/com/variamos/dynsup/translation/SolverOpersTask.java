@@ -571,7 +571,7 @@ public class SolverOpersTask extends SwingWorker<Void, Void> {
 
 							String errorHint = (String) suboper.getInstAttributeValue("errorHint");
 							String outAttribute = (String) suboper.getInstAttributeValue("outAttribute");
-							// Sub orpetion id for diferenciate the one for graphs and the one for features
+							// Suboperation id for diferenciate the one for graphs and the one for features
 							
 	
 							List<OpersIOAttribute> outAttributes = ((OpersSubOperation) suboper.getEdOperEle())

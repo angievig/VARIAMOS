@@ -3,7 +3,7 @@
   associations="true" dependencies="true" nesting-relationships="true" router="FAN">  
   <class id="1" language="java" name="com.variamos.hlcl.core.HlclProgram" project="com.variamos.hlcl" 
     file="/com.variamos.hlcl/src/main/java/com/variamos/hlcl/core/HlclProgram.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="53" y="160"/>    
+    <position height="-1" width="-1" x="3" y="165"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="true" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -34,7 +34,7 @@
   <class id="4" language="java" name="com.variamos.hlcl.model.expressions.BooleanOperation" project="com.variamos.hlcl" 
     file="/com.variamos.hlcl/src/main/java/com/variamos/hlcl/model/expressions/BooleanOperation.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="84" y="348"/>    
+    <position height="-1" width="-1" x="158" y="436"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="true" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      

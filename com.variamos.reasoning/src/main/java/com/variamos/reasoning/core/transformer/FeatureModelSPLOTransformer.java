@@ -309,7 +309,8 @@ public class FeatureModelSPLOTransformer implements ITransformer {
 							.setNegationExpression(negationConstraintExpression2);
 					variabilityDependenciesMap.put(constraintCounter,
 							variabilityDependency2);
-					model.add(variabilityDependency.getConstraintExpression());
+					//TODO Cambio, parece que había un bug aquí.
+					model.add(variabilityDependency2.getConstraintExpression());
 
 					constraintCounter++;
 
@@ -417,6 +418,7 @@ public class FeatureModelSPLOTransformer implements ITransformer {
 
 			variabilityModel.setElements(variabilityElementMap);
 			variabilityModel.setDependencies(variabilityDependenciesMap);
+			
 			//continuar con las fixed dependencies                                                                      
 			variabilityModel.setFixedDependencies(permanentDependenciesMap);
 			variabilityModel.setModel(model);

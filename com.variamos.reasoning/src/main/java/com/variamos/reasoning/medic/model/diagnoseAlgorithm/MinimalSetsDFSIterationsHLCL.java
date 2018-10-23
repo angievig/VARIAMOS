@@ -7,6 +7,11 @@ import java.util.Stack;
 
 import com.variamos.common.core.exceptions.FunctionalException;
 import com.variamos.hlcl.core.HlclProgram;
+import com.variamos.hlcl.model.domains.BinaryDomain;
+import com.variamos.hlcl.model.expressions.HlclFactory;
+import com.variamos.hlcl.model.expressions.Identifier;
+import com.variamos.hlcl.model.expressions.IntBooleanExpression;
+import com.variamos.hlcl.model.expressions.IntNumericExpression;
 import com.variamos.reasoning.medic.model.graph.ConstraintGraphHLCL;
 import com.variamos.reasoning.medic.model.graph.HLCL2Graph;
 import com.variamos.reasoning.medic.model.graph.NodeConstraintHLCL;
@@ -52,6 +57,8 @@ public class MinimalSetsDFSIterationsHLCL {
 	private int total=0; // ciclos de la busqueda, dentro del while
 	private int numPath; //total de vertices en el camino
 	int numVars=0; // variables en una salida
+	HlclFactory factory = new HlclFactory();
+
 
 	/**
 	 * Method for using the diagnosis algorithm from variamos
@@ -63,6 +70,7 @@ public class MinimalSetsDFSIterationsHLCL {
 		logParameters = log;
 		HLCL2Graph transformer= new HLCL2Graph(cspIn);
 		graph= transformer.transform();
+		
 		iterations=0;
 	}
 
@@ -76,7 +84,7 @@ public class MinimalSetsDFSIterationsHLCL {
 
 	public LinkedList<VertexHLCL> sourceOfInconsistentConstraints(String source, int maxIterations) {
 		/*
-		 * Each search returns a subset of the graph and the sequence of visited vetrices, all wrapped
+		 * Each search returns a subset of the graph and the sequence of visited vertices, all wrapped
 		 * in a Path object
 		 */
 		Path<ConstraintGraphHLCL,VertexHLCL> path = new Path<ConstraintGraphHLCL,VertexHLCL>();
@@ -104,18 +112,47 @@ public class MinimalSetsDFSIterationsHLCL {
 			logMan.writeInFile("Starting test of the MEDIC diagnosis algorithm, file: "+testName + "\n"+
 					"The strategy of the search is "+ source +"\n"+
 					"path lenght"+getPathLenght()+"main loop: "+ getIter()+ "total vertices: "+getTotal()+ "size"+ sizePath()+" \n" );
+			
 
 
 			
 			try{
 				iterations=1; //number of iterations of a call to the search algorithm
 				long startTime = System.currentTimeMillis();
+				
+				//modificar el grafo
+				//including the configuration constraint
+				//TODO lineas que incluyen en el grafo la restricción inicial.
+				
+//				VertexHLCL root= graph.getVertex(source);
+//				HlclFactory factory = new HlclFactory();
+//				IntBooleanExpression newCons= factory.greaterThan(((NodeVariableHLCL)root).getVar(), factory.number(0));
+//				NodeConstraintHLCL node= new NodeConstraintHLCL("initial", newCons);
+//				((NodeVariableHLCL)root).addUnary(node);
+				
 				path = searchPathLog(source, graph, cspIn);
 				sizes+=path.getPath().size() +", ";
 				source= path.getPath().getLast().getId(); // source for the following iterations
 				int previousLength; //Length of the path
 				ConstraintGraphHLCL subGraph= path.getSubset(); //subgraph
 				HlclProgram csp = path.getSubProblem();
+				
+				//TODO Path en la iteracion inicial
+				logMan.writeInFile("\n Path in the iteration "+ iterations +"\n");
+				for (VertexHLCL vertex : path.getPath()) {
+					//totalVertices++;
+					if(vertex instanceof NodeVariableHLCL){
+						//numVars++;
+						logMan.writeInFile(vertex.getId()+ " ");
+						logMan.writeInFile( "(");
+						for (NodeConstraintHLCL cons : ((NodeVariableHLCL) vertex).getUnary()) {
+							//totalVertices++;
+							logMan.writeInFile(cons.getId()+ " -");
+						}
+						logMan.writeInFile( ") - ");
+					}else 
+						logMan.writeInFile(vertex.getId()+ " -");
+				}
 
 				do{
 					System.gc();
@@ -128,14 +165,21 @@ public class MinimalSetsDFSIterationsHLCL {
 					//sizes+=path.getPath().size() +", ";
 					
 					int totalVertices=0;
+					//TODO printing the path after each iteration
+					logMan.writeInFile("\n Path in the iteration "+ iterations+"\n");
 					for (VertexHLCL vertex : path.getPath()) {
 						totalVertices++;
 						if(vertex instanceof NodeVariableHLCL){
 							numVars++;
+							logMan.writeInFile(vertex.getId()+ " ");
+							logMan.writeInFile( "(");
 							for (NodeConstraintHLCL cons : ((NodeVariableHLCL) vertex).getUnary()) {
 								totalVertices++;
+								logMan.writeInFile(cons.getId()+ " -");
 							}
-						}
+							logMan.writeInFile( ") - ");
+						}else 
+							logMan.writeInFile(vertex.getId()+ " -");
 					}
 					sizes+=totalVertices +", ";
 
@@ -157,20 +201,21 @@ public class MinimalSetsDFSIterationsHLCL {
 				logMan.writeInFile("Size of path at iteration No."+ iterations+": " + path.getPath().size() + "\n");
 				int totalVertices=0;
 				
-				for (VertexHLCL vertex : path.getPath()) {
-					totalVertices++;
-					if(vertex instanceof NodeVariableHLCL){
-						numVars++;
-						logMan.writeInFile(vertex.getId()+ " ");
-						logMan.writeInFile( "(");
-						for (NodeConstraintHLCL cons : ((NodeVariableHLCL) vertex).getUnary()) {
-							totalVertices++;
-							logMan.writeInFile(cons.getId()+ " -");
-						}
-						logMan.writeInFile( ") - ");
-					}else 
-						logMan.writeInFile(vertex.getId()+ " -");
-				}
+				//TODO descomentar estas lineas y comentar las que están dentro del do-while
+//				for (VertexHLCL vertex : path.getPath()) {
+//					totalVertices++;
+//					if(vertex instanceof NodeVariableHLCL){
+//						numVars++;
+//						logMan.writeInFile(vertex.getId()+ " ");
+//						logMan.writeInFile( "(");
+//						for (NodeConstraintHLCL cons : ((NodeVariableHLCL) vertex).getUnary()) {
+//							totalVertices++;
+//							logMan.writeInFile(cons.getId()+ " -");
+//						}
+//						logMan.writeInFile( ") - ");
+//					}else 
+//						logMan.writeInFile(vertex.getId()+ " -");
+//				}
 				logMan.writeInFile("Total vertices : " + totalVertices  + "\n");
 				numPath=totalVertices;
 				logMan.writeInFile("\n");
@@ -235,7 +280,8 @@ public class MinimalSetsDFSIterationsHLCL {
 		LinkedList<VertexHLCL> path= new LinkedList<VertexHLCL>(); // the path of vertices
 		Stack<VertexHLCL> stack= new Stack<VertexHLCL>();  //data structure used to perform the Depth First Search
 		stack.push(graphIn.getVertex(source)); // the data structure starts with the source vertex
-
+		 
+		//printNetwork(graph);
 		boolean satisfiable=true; // all empty csp is satisfiable
 		VertexHLCL actual=stack.pop(); //initializing the loop with a vertex
 		if (actual==null){
@@ -248,6 +294,22 @@ public class MinimalSetsDFSIterationsHLCL {
 			int count=1;// number of nodes to visit 
 			HlclProgram newConstraints= null ; // new set of constraints
 
+			//TODO including the configuration constraint solo cuando el primer
+			// vertice es de tipo variable.  La restricción se incluye en el csp temporal pero no en el grafo
+			// la restricción se incluye solo una vez
+			if (actual instanceof NodeVariableHLCL){
+				IntBooleanExpression newCons= factory.greaterThan(((NodeVariableHLCL)actual).getVar(), factory.number(0));
+				subProblem.add(newCons);
+			}else if (actual instanceof NodeConstraintHLCL){
+				Identifier reifiedVar= factory.newIdentifier("reified_"+ actual.getId());
+				BinaryDomain domain= new BinaryDomain();
+				reifiedVar.setDomain(domain);
+				IntBooleanExpression newCons= factory.greaterThan(reifiedVar, factory.number(0));
+				IntBooleanExpression reifiedCons= factory.implies(newCons, ((NodeConstraintHLCL) actual).getConstraint());
+				subProblem.add(reifiedCons);
+			}
+	
+		
 			//While the CSP is satisfiable
 			while(satisfiable){
 				path.addLast(actual);
@@ -258,6 +320,9 @@ public class MinimalSetsDFSIterationsHLCL {
 
 				if (actual instanceof NodeVariableHLCL){
 					newConstraints= ((NodeVariableHLCL)actual).getConstraints();
+					//TODO para añadir la restricción var > 0
+					//IntBooleanExpression newCons= factory.greaterThan(((NodeVariableHLCL)actual).getVar(), factory.number(0));
+					//newConstraints.add(newCons);
 					if (!newConstraints.isEmpty()){
 						empty=false;
 					}
@@ -375,10 +440,15 @@ public class MinimalSetsDFSIterationsHLCL {
 		logMan.writeInFile("Problem variables\n");
 		 HashMap<String,NodeVariableHLCL> vars= net.getVariables();
 		 for (String id : vars.keySet()) {
-			 logMan.writeInFile(id+"\n");
+			 //logMan.writeInFile(id+"\n");
+			 NodeVariableHLCL var1= vars.get(id);
 			 vecinos.append("adjacent nodes of variable "+ id + ": " );
 			 for (VertexHLCL v: net.getNeighbors(id, VertexHLCL.VARIABLE_TYPE)){
 				 vecinos.append(v.getId()+",  ");	 
+			 }
+			 for (NodeConstraintHLCL v: var1.getUnary()){
+				 vecinos.append("unary constraints"+ id + ": " );
+				 vecinos.append(v.getId()+ " , "+ v.getConstraint()+"\n"); 
 			 }
 			 vecinos.append("\n");
 		}
@@ -387,7 +457,7 @@ public class MinimalSetsDFSIterationsHLCL {
 		 logMan.writeInFile("Problem constraints\n");
 		 HashMap<String,NodeConstraintHLCL> cons= net.getConstraints();
 		 for (String id : cons.keySet()) {
-			 logMan.writeInFile(id+"\n");
+			 //logMan.writeInFile(id+"\n");
 			 vecinos.append("adjacent nodes of constraint "+ id + ": " );
 			 for (VertexHLCL v: net.getNeighbors(id, VertexHLCL.CONSTRAINT_TYPE)){
 				 vecinos.append(v.getId()+",  ");	 
@@ -398,10 +468,8 @@ public class MinimalSetsDFSIterationsHLCL {
 			 NodeVariableHLCL var1= vars.get(id);
 			 //logMan.writeInFile(id+"\n");
 			 //vecinos.append("adjacent nodes of variable "+ id + ": " );
-			 for (NodeConstraintHLCL v: var1.getUnary()){
-				 logMan.writeInFile(v.getId()+ " , "+ v.getConstraint()+"\n"); 
-			 }
-			 vecinos.append("\n");
+			 
+
 		}
 		 logMan.writeInFile(vecinos.toString());
 	}
