@@ -11,6 +11,7 @@ import java.util.Set;
 
 import com.variamos.common.core.exceptions.FunctionalException;
 import com.variamos.hlcl.core.HlclProgram;
+import com.variamos.hlcl.model.expressions.HlclFactory;
 import com.variamos.hlcl.model.expressions.IntBooleanExpression;
 import com.variamos.hlcl.model.expressions.IntNumericExpression;
 import com.variamos.reasoning.defectAnalyzer.model.diagnosis.VariabilityElementDefAna;
@@ -52,7 +53,7 @@ public class FeatureModelSPLOTransformer implements ITransformer {
 	private Map<Long, Dependency> inclusionExclusionDependenciesMap;
 	
 	private HlclProgram model;
-	private String plHlclprogram;
+	private HlclFactory factory;
 	private String rootName;
 
 
@@ -71,6 +72,7 @@ public class FeatureModelSPLOTransformer implements ITransformer {
 		permanentDependenciesMap = new HashMap<Long, Dependency>();
 		inclusionExclusionDependenciesMap = new HashMap<Long, Dependency>();
 		model= new HlclProgram();
+		factory = new HlclFactory();
 
 	}
 
@@ -294,7 +296,7 @@ public class FeatureModelSPLOTransformer implements ITransformer {
 						.setNegationExpression(negationConstraintExpression);
 				variabilityDependenciesMap.put(constraintCounter,
 						variabilityDependency);
-				model.add(variabilityDependency.getConstraintExpression());
+				
 
 
 				constraintCounter++;
@@ -310,10 +312,13 @@ public class FeatureModelSPLOTransformer implements ITransformer {
 					variabilityDependenciesMap.put(constraintCounter,
 							variabilityDependency2);
 					//TODO Cambio, parece que había un bug aquí.
-					model.add(variabilityDependency2.getConstraintExpression());
+					model.add(factory.and(variabilityDependency.getConstraintExpression(), 
+							variabilityDependency2.getConstraintExpression()));
 
 					constraintCounter++;
 
+				}else{
+					model.add(variabilityDependency.getConstraintExpression());
 				}
 
 			}

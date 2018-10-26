@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -91,10 +90,18 @@ public class ConstraintGraphHLCL {
 	public void addEdge(VertexHLCL v1, VertexHLCL v2) throws Exception{
 		if ((v1 instanceof NodeConstraintHLCL && v2 instanceof NodeVariableHLCL) ||
 				(v1 instanceof NodeVariableHLCL && v2 instanceof NodeConstraintHLCL)  ){
+			//FIXME organizar la condicion 
+			// ya existe una arista
+			if (v1.getNeighbors().contains(v2) && v2.getNeighbors().contains(v1)){
 			
-			v1.addNeighbor(v2);
-			v2.addNeighbor(v1);
-			edges++;
+			}
+			// si no existe la arista
+			else{
+				v1.addNeighbor(v2);
+				v2.addNeighbor(v1);
+				edges++;
+			}
+			
 		}else{
 			throw new Exception("An error occured when adding an edge containing two vertices of the same type, vertices: " 
 		                         + v1.getId() + " , "+ v2.getId());

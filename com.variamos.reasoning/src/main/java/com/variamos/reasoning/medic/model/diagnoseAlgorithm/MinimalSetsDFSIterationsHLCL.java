@@ -281,7 +281,7 @@ public class MinimalSetsDFSIterationsHLCL {
 		Stack<VertexHLCL> stack= new Stack<VertexHLCL>();  //data structure used to perform the Depth First Search
 		stack.push(graphIn.getVertex(source)); // the data structure starts with the source vertex
 		 
-		//printNetwork(graph);
+		printNetwork(graph);
 		boolean satisfiable=true; // all empty csp is satisfiable
 		VertexHLCL actual=stack.pop(); //initializing the loop with a vertex
 		if (actual==null){
@@ -305,7 +305,7 @@ public class MinimalSetsDFSIterationsHLCL {
 				BinaryDomain domain= new BinaryDomain();
 				reifiedVar.setDomain(domain);
 				IntBooleanExpression newCons= factory.greaterThan(reifiedVar, factory.number(0));
-				IntBooleanExpression reifiedCons= factory.implies(newCons, ((NodeConstraintHLCL) actual).getConstraint());
+				IntBooleanExpression reifiedCons= factory.doubleImplies(newCons, ((NodeConstraintHLCL) actual).getConstraint());
 				subProblem.add(reifiedCons);
 			}
 	
@@ -339,7 +339,7 @@ public class MinimalSetsDFSIterationsHLCL {
 				}
 				// if the csp is satisfiable, then the traverse of the constraint network continues.
 				if(satisfiable){
-					actual=getNextNode(stack, actual,subGraph);
+					actual=getNextNode(stack, actual,subGraph, path);
 					count++;
 				}
 			}
@@ -359,7 +359,7 @@ public class MinimalSetsDFSIterationsHLCL {
 	 * @throws Exception when the stack is empty, this happens when the graph contains 
 	 * an unconnected region or when the problem is consistent.
 	 */
-	public VertexHLCL getNextNode(Stack<VertexHLCL> structure, VertexHLCL actual, ConstraintGraphHLCL newG )throws Exception{
+	public VertexHLCL getNextNode(Stack<VertexHLCL> structure, VertexHLCL actual, ConstraintGraphHLCL newG, LinkedList<VertexHLCL> path )throws Exception{
 
 		//Mark the current vertex as visited
 		actual.setSearchState(VertexHLCL.VISITED);
@@ -371,10 +371,37 @@ public class MinimalSetsDFSIterationsHLCL {
 				v.setParent(actual);
 				structure.push(v);
 				v.setSearchState(VertexHLCL.INSTACK);
+			}else{
+				if (v.getSearchState()== VertexHLCL.VISITED){
+					
+					
+					if (v.getId().equals(actual.getParent().getId())){
+					
+					}else{
+						// ambos vertices estan en el grafo porque v ya esta visitado y
+						// actual fue incluido en la iteeracion anterior
+						VertexHLCL clonActual=newG.getVertex(actual.getId());
+						VertexHLCL clonV=newG.getVertex(v.getId());
+						newG.addEdge(clonActual, clonV);
+					}
+				}
 			}	
 		}
 		
 		if (structure.isEmpty()){
+			logMan.writeInFile("\n Path in the iteration before the exception "+ iterations+"\n");
+			for (VertexHLCL vertex : path) {
+				if(vertex instanceof NodeVariableHLCL){
+					numVars++;
+					logMan.writeInFile(vertex.getId()+ " ");
+					logMan.writeInFile( "(");
+					for (NodeConstraintHLCL cons : ((NodeVariableHLCL) vertex).getUnary()) {
+						logMan.writeInFile(cons.getId()+ " -");
+					}
+					logMan.writeInFile( ") - ");
+				}else 
+					logMan.writeInFile(vertex.getId()+ " -");
+			}
 			throw new Exception("The stack is empty, this means that the problem is consistent");
 		}
 		else{ // if everything is all right (not empty stack)
@@ -387,6 +414,7 @@ public class MinimalSetsDFSIterationsHLCL {
 			// Including the new vertex into the subgraph
 			VertexHLCL nV= next.clone();
 			VertexHLCL parent = newG.getVertex(next.getParent().getId()); 
+			nV.setDistance(parent.getDistance()+1);
 			newG.addVertex(nV);
 			newG.addEdge(nV, parent);
 		}
@@ -448,7 +476,8 @@ public class MinimalSetsDFSIterationsHLCL {
 			 }
 			 for (NodeConstraintHLCL v: var1.getUnary()){
 				 vecinos.append("unary constraints"+ id + ": " );
-				 vecinos.append(v.getId()+ " , "+ v.getConstraint()+"\n"); 
+				 vecinos.append(v.getId()+ "\n");
+				 //vecinos.append(v.getId()+ " , "+ v.getConstraint()+"\n"); 
 			 }
 			 vecinos.append("\n");
 		}

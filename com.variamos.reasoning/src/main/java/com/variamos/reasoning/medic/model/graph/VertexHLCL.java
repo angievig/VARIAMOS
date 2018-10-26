@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import com.variamos.hlcl.core.HlclProgram;
@@ -29,13 +30,23 @@ public abstract class VertexHLCL implements Comparable<VertexHLCL>{
 	public static final int NOT_VISITED=0;
 	private  String id;
 	private HlclProgram constraints;
+	//distance from root
+	private int distance;
 
 
+	//changed from List to set
 	private List <VertexHLCL> neighbors;
 	private int searchState;
 	private VertexHLCL parent;
 	private int order;
 	
+	public int getDistance(){
+		return distance;
+	}
+	
+	public void setDistance(int dist){
+		distance=dist;
+	}
 
 
 
@@ -58,6 +69,7 @@ public abstract class VertexHLCL implements Comparable<VertexHLCL>{
 		constraints= new HlclProgram();
 		searchState= NOT_VISITED;
 		parent= null;
+		distance=0;
 	}
 	
 
@@ -68,6 +80,7 @@ public abstract class VertexHLCL implements Comparable<VertexHLCL>{
 	//FIXME fix the return
 	public boolean addNeighbor(VertexHLCL v){
 		neighbors.add(0,v);
+		//neighbors.add(v);
 		return true;
 	}
 	
