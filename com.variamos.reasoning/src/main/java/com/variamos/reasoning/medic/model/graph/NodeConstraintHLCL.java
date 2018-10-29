@@ -21,7 +21,7 @@ public class NodeConstraintHLCL extends VertexHLCL {
 	 */
 	
 	//private Constraint cons;
-	private Collection <NodeVariableHLCL> neighbors;
+	//private Collection <NodeVariableHLCL> neighbors;
 	
 	//FIXME el ide debe ser el id de la interfaz de variamos
 	

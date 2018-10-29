@@ -14,7 +14,7 @@ import com.variamos.hlcl.model.expressions.Identifier;
 
 public class NodeVariableHLCL extends VertexHLCL {
 	
-	private Collection <NodeConstraintHLCL> neighbors;
+	//private Collection <NodeConstraintHLCL> neighbors;
 	private ArrayList<NodeConstraintHLCL> unary;
 	private Identifier var;
 		

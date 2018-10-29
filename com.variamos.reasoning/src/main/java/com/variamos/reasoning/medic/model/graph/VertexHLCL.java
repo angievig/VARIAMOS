@@ -79,8 +79,8 @@ public abstract class VertexHLCL implements Comparable<VertexHLCL>{
 	}
 	//FIXME fix the return
 	public boolean addNeighbor(VertexHLCL v){
-		neighbors.add(0,v);
-		//neighbors.add(v);
+		//neighbors.add(0,v);
+		neighbors.add(v);
 		return true;
 	}
 	
