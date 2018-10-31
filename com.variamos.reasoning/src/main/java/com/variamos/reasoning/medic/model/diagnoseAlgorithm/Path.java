@@ -65,22 +65,40 @@ public class Path {
 		//se crea el nuevo grafo
 		projectionGraph= new ConstraintGraphHLCL();
 		
-		VertexHLCL previous=null;
+//		VertexHLCL previous=null;
+//		VertexHLCL clon=null;
+//		//se recorre el camino uno a uno 
+//		for (VertexHLCL vertex : path) {
+//			clon= vertex.clone();
+//			//se agrega el vertice en el grafo 
+//			projectionGraph.addVertex(clon);
+//			
+//			// el nodo anterior es null cuando vertex es el primero del camino
+//			// solo en ese caso no se agrega una arista.
+//			if(previous!=null){
+//				projectionGraph.addEdge(clon, previous);
+//			}
+//			// se obtiene el vertice anterior (debe ser el padre del actual)
+//			previous= clon;	
+//		}
+		//nueva estrategia, conectar con el padre en el grafo
+		VertexHLCL parent=null;
 		VertexHLCL clon=null;
 		//se recorre el camino uno a uno 
 		for (VertexHLCL vertex : path) {
 			clon= vertex.clone();
 			//se agrega el vertice en el grafo 
 			projectionGraph.addVertex(clon);
+			//se obtiene el padre (debe estar en el grafo)
 			
-			// el nodo anterior es null cuando vertex es el primero del camino
+			// el nodo padre es null cuando vertex es el primero del camino
 			// solo en ese caso no se agrega una arista.
-			if(previous!=null){
-				projectionGraph.addEdge(clon, previous);
+			if(vertex.getParent()!=null){
+				parent= projectionGraph.getVertex(vertex.getParent().getId());
+				projectionGraph.addEdge(clon, parent);
 			}
-			// se obtiene el vertice anterior (debe ser el padre del actual)
-			previous= clon;	
 		}
+		
 		return projectionGraph;
 	}
 	

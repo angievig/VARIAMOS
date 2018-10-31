@@ -350,7 +350,7 @@ public class MinimalSetsDFSIterationsHLCL {
 				// if the csp is satisfiable, then the traverse of the constraint network continues.
 				if(satisfiable){
 					//actual=getNextNode(stack, actual,subGraph, path); llamado en version subgrafo
-					actual=getNextNode(stack, actual, path, subProblem);
+					actual=getNextVertex(stack, actual, path, subProblem);
 					count++;
 				}
 			}
@@ -373,19 +373,20 @@ public class MinimalSetsDFSIterationsHLCL {
 	 */
 	//comentada la declaracion de la version subgrafo
 	//public VertexHLCL getNextNode(Stack<VertexHLCL> structure, VertexHLCL actual, ConstraintGraphHLCL newG, LinkedList<VertexHLCL> path )throws Exception{
-	public VertexHLCL getNextNode(Stack<VertexHLCL> structure, VertexHLCL actual, LinkedList<VertexHLCL> path, HlclProgram subProblem)throws Exception{
+	public VertexHLCL getNextVertex(Stack<VertexHLCL> structure, VertexHLCL actual, LinkedList<VertexHLCL> path, HlclProgram subProblem)throws Exception{
 
 		//Mark the current vertex as visited
 		actual.setSearchState(VertexHLCL.VISITED);
 		VertexHLCL next= null;
 		
 		// including the adjacent vertices in the stack only if it's not visited  
-		int numberOfVertices=0;
+		int numberOfIncludedVertices=0;
+		int numberOfSuccessors= actual.getNeighbors().size()-1;
 		for(VertexHLCL v: actual.getNeighbors()){
 			if (v.getSearchState()!= VertexHLCL.VISITED){
 				v.setParent(actual);
 				structure.push(v);
-				++numberOfVertices;
+				++numberOfIncludedVertices;
 				v.setSearchState(VertexHLCL.INSTACK);
 			}
 			// estas líneas fueron comentadas porque no se incluyen nuevos vertices al grafo
@@ -435,7 +436,8 @@ public class MinimalSetsDFSIterationsHLCL {
 			
 			
 			//Si el vertice actual no incluyo nuevos vertices en la pila (porque no tiene sucesores)
-			if (numberOfVertices==0){
+			// se agrega a la condicion que elnumero de sucesores sea igual a cero, con el 
+			if (numberOfIncludedVertices==0 && numberOfSuccessors==0){
 				//Se debe actualizar el path quitando los vertices que ya no deben ir.
 				// se elimina a partir del padre del siguiente vertice
 				// 1. obtener el padre de next
