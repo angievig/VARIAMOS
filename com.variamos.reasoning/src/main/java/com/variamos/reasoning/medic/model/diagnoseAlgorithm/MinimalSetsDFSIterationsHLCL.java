@@ -281,11 +281,10 @@ public class MinimalSetsDFSIterationsHLCL {
 	public Path 
 	searchPathLog(String source, ConstraintGraphHLCL graphIn, HlclProgram csp) throws Exception{
 		iterationsPath=0;
-		Path output= null; // the output
+		Path output= null; // the object wrapping the output
 		HlclProgram subProblem = new HlclProgram();
 		LinkedList<VertexHLCL> path= new LinkedList<VertexHLCL>(); // the path of vertices
 		Stack<VertexHLCL> stack= new Stack<VertexHLCL>();  //data structure used to perform the Depth First Search
-		Queue<VertexHLCL> queue= new LinkedList<VertexHLCL>(); // data structure for managing the successor vertices of the initial vetrex 
 		
 		// we obtain the initial vertex using the id given as a parameter
 		VertexHLCL first= graphIn.getVertex(source);
@@ -297,8 +296,9 @@ public class MinimalSetsDFSIterationsHLCL {
 		}
 		else{
 
-			int count=1;// number of nodes to visit 
-			
+			stack.push(first); // the data structure starts with the source vertex
+			int count=1;// number of visited vertices 
+			boolean satisfiable=true; // all empty csp is satisfiable
 
 			// including the configuration constraint solo cuando el primer
 			// vertice es de tipo variable.  La restricción se incluye en el csp temporal pero no en el grafo
@@ -316,29 +316,17 @@ public class MinimalSetsDFSIterationsHLCL {
 				firstConstraint=reifiedCons;
 				subProblem.add(reifiedCons);
 			}
-			// including the source vertex in the path and in the csp
-			path.addLast(first);
-			subProblem.addAll(first.getConstraints());
-			iterationsPath++;
-			total++;
-			first.setOrder(count);
-			first.setSearchState(VertexHLCL.VISITED);
-			boolean satisfiable=true; // all empty csp is satisfiable
-			boolean inconsistencyFound= false;
-			
-			queue.addAll(first.getNeighbors());
-			VertexHLCL actual= queue.poll();
-			actual.setParent(first);
-			actual.setDistance(1);
 
-			while(!inconsistencyFound && actual!=null){
+			
+
+	
 //				//initializing the variables in the iner cicle
 //				stack.push(graphIn.getVertex(source)); // the data structure starts with the source vertex
-//				actual=stack.pop(); //initializing the loop with a vertex
+				VertexHLCL actual=stack.pop(); //initializing the loop with a vertex
 				HlclProgram newConstraints= null ; // new set of constraints
 
 				//While the CSP is satisfiable
-				while(satisfiable && !inconsistencyFound){
+				while(satisfiable){
 					path.addLast(actual);
 					iterationsPath++;
 					total++;
@@ -363,13 +351,13 @@ public class MinimalSetsDFSIterationsHLCL {
 					}
 					// if the csp is satisfiable, then the search continues
 					if(satisfiable){
-						actual=getNextVertex(stack, actual, path, subProblem,inconsistencyFound);
+						actual=getNextVertex(stack, actual);
 						count++;
 					}
 				}
-				actual=queue.poll();
+				
 			}
-		}
+		
 		// creating the output 
 		output= new Path(graphIn, path, subProblem);
 		//output= new Path<ConstraintGraphHLCL,VertexHLCL>(subGraph, path, subProblem);llamado en version subgrafo
@@ -390,10 +378,12 @@ public class MinimalSetsDFSIterationsHLCL {
 	//public VertexHLCL getNextNode(Stack<VertexHLCL> structure, VertexHLCL actual, ConstraintGraphHLCL newG, LinkedList<VertexHLCL> path )throws Exception{
 	public VertexHLCL getNextVertex(
 			Stack<VertexHLCL> structure, 
-			VertexHLCL actual, 
-			LinkedList<VertexHLCL> path,
-			HlclProgram subProblem,
-			boolean flag //to determine if the search ended without finding an inconsistency
+			VertexHLCL actual//,
+			//ConstraintGraphHLCL newG //FIXME this line should be included for creating a subgraph while searching (instead of projecting) 
+			//lines commented for returning to the subgraph version of the algorithm
+			//LinkedList<VertexHLCL> path,
+			//HlclProgram subProblem,
+			//boolean flag //to determine if the search ended without finding an inconsistency
 			)throws Exception{
 
 		//Mark the current vertex as visited
@@ -410,61 +400,28 @@ public class MinimalSetsDFSIterationsHLCL {
 				v.setSearchState(VertexHLCL.INSTACK);
 			}	
 		}
-		
-//		if (structure.isEmpty()){
-//			logMan.writeInFile("\n Path in the iteration before the exception "+ iterations+"\n");
-//			for (VertexHLCL vertex : path) {
-//				if(vertex instanceof NodeVariableHLCL){
-//					numVars++;
-//					logMan.writeInFile(vertex.getId()+ " ");
-//					logMan.writeInFile( "(");
-//					for (NodeConstraintHLCL cons : ((NodeVariableHLCL) vertex).getUnary()) {
-//						logMan.writeInFile(cons.getId()+ " -");
-//					}
-//					logMan.writeInFile( ") - ");
-//				}else 
-//					logMan.writeInFile(vertex.getId()+ " -");
-//			}
-//			throw new Exception("The stack is empty, this means that the problem is consistent");
-//		}
-//		else{ // if everything is all right (not empty stack)
+					
 
-			
-		//Find the next vertex, a non visited vertex.
-		
-			do{
-				next= structure.pop();
-			}while(next.getSearchState()==VertexHLCL.VISITED && !structure.isEmpty());
-			
 			if (structure.isEmpty()){
-				flag=true;
+				throw new Exception("The stack is empty, this means that the problem is consistent");
 			}
 			else{
+				//Find the next vertex, a non visited vertex.
+				
+				do{
+					next= structure.pop();
+				}while(next.getSearchState()==VertexHLCL.VISITED && !structure.isEmpty());
+				
 				//distance from the origen distance of the parent + 1
 				next.setDistance(next.getParent().getDistance() + 1);
-
-				//Si el vertice actual no incluyo nuevos vertices en la pila (porque no tiene sucesores)
-				// se agrega a la condicion que elnumero de sucesores sea igual a cero, con el 
-				if (numberOfIncludedVertices==0){
-					//Se debe actualizar el path quitando los vertices que ya no deben ir.
-					// se elimina a partir del padre del siguiente vertice
-					// 1. obtener el padre de next
-
-					VertexHLCL parent = next.getParent();
-					// borrar los vertices que están despues de el padre del siguiente vertice a examinar
-					while(!(path.getLast().getId().equals(parent.getId()))){
-						path.removeLast();
-					}
-					//actualizar el CSP
-					subProblem.clear();
-					subProblem.add(firstConstraint);
-					for (VertexHLCL v : path) {
-						subProblem.addAll(v.getConstraints());
-					}
-
-				}
+				// Including the new vertex into the subgraph
+				//FIXME uncomment these lines for creatin the subgraph while serching
+//				VertexHLCL nV= next.clone();
+//				VertexHLCL parent = newG.getVertex(next.getParent().getId()); 
+//				newG.addVertex(nV);
+//				newG.addEdge(nV, parent);
+				
 			}
-			
 		return next;
 	}
 	
